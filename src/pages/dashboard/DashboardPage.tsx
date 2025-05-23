@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Plane, Users, FileText, MapPin, AlertCircle, BarChart3, PlusCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { FlightApplication, Drone, Pilot } from '../../types';
+import FlightActivityChart from '../../components/analytics/FlightActivityChart';
+import DroneUsageChart from '../../components/analytics/DroneUsageChart';
 
-// Мок-данные для демонстрации
 const mockFlights: FlightApplication[] = [
   {
     id: '1',
@@ -102,8 +103,9 @@ const DashboardPage: React.FC = () => {
     approvedFlights: 12,
     rejectedFlights: 3,
   });
+  const [activeChart, setActiveChart] = useState<'activity' | 'usage'>('activity');
+  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('week');
 
-  // Карточка со статистикой
   const StatCard = ({ icon, title, value, color }: { icon: React.ReactNode; title: string; value: number; color: string }) => (
     <div className="glass-card p-6 flex items-center">
       <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${color}`}>
@@ -116,9 +118,7 @@ const DashboardPage: React.FC = () => {
     </div>
   );
 
-  // Карточка с заявкой
   const FlightCard = ({ flight }: { flight: FlightApplication }) => {
-    // Форматирование даты
     const formatDate = (date: Date) => {
       return new Intl.DateTimeFormat('ru-RU', {
         day: '2-digit',
@@ -129,7 +129,6 @@ const DashboardPage: React.FC = () => {
       }).format(date);
     };
 
-    // Статус заявки
     const getStatusBadge = (status: string) => {
       switch (status) {
         case 'pending':
@@ -190,7 +189,6 @@ const DashboardPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Активные дроны */}
         <div className="glass-card p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Активные дроны</h2>
@@ -225,7 +223,6 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Последние заявки */}
         <div className="glass-card p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Последние заявки</h2>
@@ -243,23 +240,52 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Диаграммы и графики (Упрощенная версия) */}
       <div className="glass-card p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Аналитика</h2>
           <div className="flex space-x-2">
-            <button className="btn btn-outline text-sm py-1 px-3">День</button>
-            <button className="btn btn-primary text-sm py-1 px-3">Неделя</button>
-            <button className="btn btn-outline text-sm py-1 px-3">Месяц</button>
+            <button 
+              className={`btn ${timeRange === 'day' ? 'btn-primary' : 'btn-outline'} text-sm py-1 px-3`}
+              onClick={() => setTimeRange('day')}
+            >
+              День
+            </button>
+            <button 
+              className={`btn ${timeRange === 'week' ? 'btn-primary' : 'btn-outline'} text-sm py-1 px-3`}
+              onClick={() => setTimeRange('week')}
+            >
+              Неделя
+            </button>
+            <button 
+              className={`btn ${timeRange === 'month' ? 'btn-primary' : 'btn-outline'} text-sm py-1 px-3`}
+              onClick={() => setTimeRange('month')}
+            >
+              Месяц
+            </button>
           </div>
         </div>
-        
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center text-gray-500 dark:text-gray-400 space-y-4">
-            <BarChart3 className="w-16 h-16 mx-auto opacity-40" />
-            <p>Здесь будут отображаться графики активности полетов и использования дронов.</p>
-            <p className="text-sm">Доступно в полной версии системы</p>
+
+        <div className="mb-6">
+          <div className="flex space-x-4 mb-4">
+            <button
+              className={`btn ${activeChart === 'activity' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setActiveChart('activity')}
+            >
+              Активность полетов
+            </button>
+            <button
+              className={`btn ${activeChart === 'usage' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setActiveChart('usage')}
+            >
+              Использование дронов
+            </button>
           </div>
+
+          {activeChart === 'activity' ? (
+            <FlightActivityChart />
+          ) : (
+            <DroneUsageChart />
+          )}
         </div>
       </div>
     </div>
